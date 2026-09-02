@@ -5,9 +5,11 @@
 **Class:** BE CMPN B
 
 ## Project
+
 A small web-based Child Education Sponsorship System designed to centralize sponsorship records and demonstrate a complete DevOps lifecycle.
 
 ## MVP
+
 - User login and role-based access
 - Sponsorship record creation, viewing, updating and searching
 - Pending → Active → Completed status workflow
@@ -16,6 +18,7 @@ A small web-based Child Education Sponsorship System designed to centralize spon
 - Git/GitHub, Jenkins, Selenium, Docker and Ansible
 
 ## Technology Stack
+
 - Java 21
 - Spring Boot
 - Maven
@@ -28,14 +31,16 @@ A small web-based Child Education Sponsorship System designed to centralize spon
 - Ansible
 
 ## Run locally
+
 ```bash
 mvn clean test
 mvn spring-boot:run
 ```
 
-Open http://localhost:8080
+Open http://localhost:8001
 
-H2 console: http://localhost:8080/h2-console
+H2 console: http://localhost:8001/h2-console
 
 ## Planned DevOps flow
+
 GitHub → Jenkins → Maven Build → Selenium → Docker → Deployment → Ansible → Health Check
