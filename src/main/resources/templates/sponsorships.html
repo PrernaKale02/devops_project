@@ -1,0 +1,141 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+	<head>
+		<meta charset="UTF-8" />
+		<title>Sponsorship Records</title>
+
+		<style>
+			body {
+				font-family: Arial, sans-serif;
+				margin: 40px;
+				background: #f5f7fa;
+			}
+
+			.container {
+				max-width: 1200px;
+				margin: auto;
+				background: white;
+				padding: 30px;
+				border-radius: 10px;
+			}
+
+			h1 {
+				margin-bottom: 25px;
+			}
+
+			.actions {
+				display: flex;
+				gap: 10px;
+				margin-bottom: 20px;
+			}
+
+			input {
+				padding: 10px;
+				width: 300px;
+			}
+
+			button,
+			.button {
+				padding: 10px 16px;
+				border: none;
+				background: #2563eb;
+				color: white;
+				text-decoration: none;
+				border-radius: 5px;
+				cursor: pointer;
+			}
+
+			table {
+				width: 100%;
+				border-collapse: collapse;
+			}
+
+			th,
+			td {
+				padding: 12px;
+				border-bottom: 1px solid #ddd;
+				text-align: left;
+			}
+
+			th {
+				background: #f1f5f9;
+			}
+
+			.edit {
+				color: #2563eb;
+			}
+
+			.delete {
+				color: #dc2626;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div class="container">
+			<h1>Sponsorship Records</h1>
+
+			<div class="actions">
+				<form method="get" action="/sponsorships">
+					<input
+						type="text"
+						name="search"
+						placeholder="Search child or sponsor"
+						th:value="${search}"
+					/>
+					<button type="submit">Search</button>
+				</form>
+
+				<a class="button" href="/sponsorships/new"> + Add Sponsorship </a>
+			</div>
+
+			<table>
+				<thead>
+					<tr>
+						<th>Child ID</th>
+						<th>Child Name</th>
+						<th>Age</th>
+						<th>Education</th>
+						<th>School</th>
+						<th>Sponsor</th>
+						<th>Amount</th>
+						<th>Status</th>
+						<th>Actions</th>
+					</tr>
+				</thead>
+
+				<tbody>
+					<tr th:each="s : ${sponsorships}">
+						<td th:text="${s.childId}"></td>
+						<td th:text="${s.childName}"></td>
+						<td th:text="${s.age}"></td>
+						<td th:text="${s.educationLevel}"></td>
+						<td th:text="${s.school}"></td>
+						<td th:text="${s.sponsorName}"></td>
+						<td th:text="${s.sponsorshipAmount}"></td>
+						<td th:text="${s.status}"></td>
+
+						<td>
+							<a class="edit" th:href="@{/sponsorships/edit/{id}(id=${s.id})}">
+								Edit
+							</a>
+
+							|
+
+							<a
+								class="delete"
+								th:href="@{/sponsorships/delete/{id}(id=${s.id})}"
+							>
+								Delete
+							</a>
+						</td>
+					</tr>
+
+					<tr th:if="${#lists.isEmpty(sponsorships)}">
+						<td colspan="9">No sponsorship records found.</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</body>
+</html>
