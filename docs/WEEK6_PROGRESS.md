@@ -3,7 +3,7 @@
 This record follows the project plan established during the earlier planning
 weeks. It distinguishes the working MVP from future DevOps milestones.
 
-## Completed
+## Completed MVP and Week 6 work
 
 - Sponsorship CRUD is available through the Thymeleaf UI.
 - Sponsorship search supports child ID, child name, sponsor name and exact status.
