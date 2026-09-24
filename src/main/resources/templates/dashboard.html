@@ -1,0 +1,62 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Sponsorship Dashboard</title>
+		<style>
+			body {
+				font-family: Arial, sans-serif;
+				margin: 40px;
+				background: #f5f7fa;
+			}
+			.container {
+				max-width: 900px;
+				margin: auto;
+				background: white;
+				padding: 30px;
+				border-radius: 10px;
+			}
+			.counts {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+				gap: 15px;
+			}
+			.count {
+				padding: 20px;
+				background: #f1f5f9;
+				border-radius: 6px;
+			}
+			.count strong {
+				display: block;
+				font-size: 2rem;
+			}
+			a {
+				display: inline-block;
+				margin-top: 25px;
+				color: #2563eb;
+			}
+		</style>
+	</head>
+	<body>
+		<main class="container">
+			<h1>Sponsorship Dashboard</h1>
+			<div class="counts">
+				<div class="count"><strong th:text="${totalCount}">0</strong>Total</div>
+				<div class="count">
+					<strong th:text="${pendingCount}">0</strong>Pending
+				</div>
+				<div class="count">
+					<strong th:text="${activeCount}">0</strong>Active
+				</div>
+				<div class="count">
+					<strong th:text="${completedCount}">0</strong>Completed
+				</div>
+				<div class="count">
+					<strong th:text="${cancelledCount}">0</strong>Cancelled
+				</div>
+			</div>
+			<a href="/sponsorships">Back to sponsorship records</a>
+		</main>
+	</body>
+</html>
