@@ -8,27 +8,29 @@
 
 A small web-based Child Education Sponsorship System designed to centralize sponsorship records and demonstrate a complete DevOps lifecycle.
 
-## MVP
+## Implemented MVP
 
-- User login and role-based access
-- Sponsorship record creation, viewing, updating and searching
-- Pending → Active → Completed status workflow
-- Cancelled status for authorized users
-- Summary dashboard
-- Git/GitHub, Jenkins, Selenium, Docker and Ansible
+- Landing page with navigation to sponsorship management
+- Sponsorship record creation, listing, editing and deletion
+- Search by child ID, child name, sponsor name and exact status
+- Pending, Active, Completed and Cancelled status values
+- Status updates from the records page
+- Summary dashboard with total and per-status counts
+
+Authentication, user accounts and role-based authorization are planned but are not
+implemented in the current MVP.
 
 ## Technology Stack
 
-- Java 21
-- Spring Boot
+- Java 17
+- Spring Boot 3.5.5
 - Maven
 - Thymeleaf
-- H2 for initial local development
-- MySQL planned for deployment
-- Selenium WebDriver
-- Jenkins
-- Docker
-- Ansible
+- Spring Data JPA
+- H2 for local development
+
+Jenkins, Selenium WebDriver, Docker, Ansible and MySQL are planned for later
+DevOps stages and are not yet configured in this repository.
 
 ## Run locally
 
@@ -40,6 +42,15 @@ mvn spring-boot:run
 Open http://localhost:8001
 
 H2 console: http://localhost:8001/h2-console
+
+The required Java version is 17. The test suite uses Spring Boot integration
+tests with an in-memory H2 database.
+
+## Verification commands
+
+```bash
+mvn clean test
+```
 
 ## Planned DevOps flow
 

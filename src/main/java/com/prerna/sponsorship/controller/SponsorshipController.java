@@ -7,6 +7,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Locale;
 
 @Controller
 @RequestMapping("/sponsorships")
@@ -26,9 +27,18 @@ public class SponsorshipController {
         List<Sponsorship> sponsorships;
 
         if (search != null && !search.trim().isEmpty()) {
+            String normalizedSearch = search.trim();
             sponsorships = repository
-                    .findByChildNameContainingIgnoreCaseOrSponsorNameContainingIgnoreCase(
-                            search, search);
+                    .findByChildIdContainingIgnoreCaseOrChildNameContainingIgnoreCaseOrSponsorNameContainingIgnoreCase(
+                            normalizedSearch, normalizedSearch, normalizedSearch);
+
+            try {
+                Sponsorship.Status status = Sponsorship.Status.valueOf(
+                        normalizedSearch.toUpperCase(Locale.ROOT));
+                sponsorships = repository.findByStatus(status);
+            } catch (IllegalArgumentException ignored) {
+                // Text search covers child and sponsor fields.
+            }
         } else {
             sponsorships = repository.findAll();
         }
@@ -37,6 +47,16 @@ public class SponsorshipController {
         model.addAttribute("search", search);
 
         return "sponsorships";
+    }
+
+    @GetMapping("/dashboard")
+    public String dashboard(Model model) {
+        model.addAttribute("totalCount", repository.count());
+        model.addAttribute("pendingCount", repository.countByStatus(Sponsorship.Status.PENDING));
+        model.addAttribute("activeCount", repository.countByStatus(Sponsorship.Status.ACTIVE));
+        model.addAttribute("completedCount", repository.countByStatus(Sponsorship.Status.COMPLETED));
+        model.addAttribute("cancelledCount", repository.countByStatus(Sponsorship.Status.CANCELLED));
+        return "dashboard";
     }
 
     @GetMapping("/new")
@@ -54,6 +74,15 @@ public class SponsorshipController {
             sponsorship.setStatus(Sponsorship.Status.PENDING);
         }
 
+        repository.save(sponsorship);
+        return "redirect:/sponsorships";
+    }
+
+    @PostMapping("/{id}/status")
+    public String updateStatus(@PathVariable Long id, @RequestParam Sponsorship.Status status) {
+        Sponsorship sponsorship = repository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid sponsorship ID: " + id));
+        sponsorship.setStatus(status);
         repository.save(sponsorship);
         return "redirect:/sponsorships";
     }

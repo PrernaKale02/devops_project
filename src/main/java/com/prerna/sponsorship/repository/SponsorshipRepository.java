@@ -7,7 +7,12 @@ import java.util.List;
 
 public interface SponsorshipRepository extends JpaRepository<Sponsorship, Long> {
 
-    List<Sponsorship> findByChildNameContainingIgnoreCaseOrSponsorNameContainingIgnoreCase(
+    List<Sponsorship> findByChildIdContainingIgnoreCaseOrChildNameContainingIgnoreCaseOrSponsorNameContainingIgnoreCase(
+            String childId,
             String childName,
             String sponsorName);
+
+    List<Sponsorship> findByStatus(Sponsorship.Status status);
+
+    long countByStatus(Sponsorship.Status status);
 }

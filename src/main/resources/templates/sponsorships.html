@@ -87,6 +87,7 @@
 				</form>
 
 				<a class="button" href="/sponsorships/new"> + Add Sponsorship </a>
+				<a class="button" href="/sponsorships/dashboard"> Dashboard </a>
 			</div>
 
 			<table>
@@ -119,6 +120,24 @@
 							<a class="edit" th:href="@{/sponsorships/edit/{id}(id=${s.id})}">
 								Edit
 							</a>
+
+							|
+
+							<form
+								th:action="@{/sponsorships/{id}/status(id=${s.id})}"
+								method="post"
+								style="display: inline"
+							>
+								<select name="status" aria-label="Update status">
+									<option
+										th:each="status : ${T(com.prerna.sponsorship.model.Sponsorship.Status).values()}"
+										th:value="${status}"
+										th:text="${status}"
+										th:selected="${status == s.status}"
+									></option>
+								</select>
+								<button type="submit">Update</button>
+							</form>
 
 							|
 
