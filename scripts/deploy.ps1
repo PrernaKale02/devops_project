@@ -14,34 +14,7 @@ $pidPath = Join-Path $logDirectory 'application.pid'
 if (-not (Test-Path -LiteralPath $jarPath -PathType Leaf)) {
     throw "Packaged application JAR was not found: $jarPath"
 }
-
 New-Item -ItemType Directory -Path $logDirectory -Force | Out-Null
-
-$listenerIds = @(
-    Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue |
-        Select-Object -ExpandProperty OwningProcess -Unique
-)
-foreach ($listenerId in $listenerIds) {
-    $listener = Get-CimInstance -ClassName Win32_Process -Filter "ProcessId = $listenerId" -ErrorAction SilentlyContinue
-    if ($null -eq $listener) {
-        continue
-    }
-
-    if ($listener.Name -notin @('java.exe', 'javaw.exe') -or $listener.CommandLine -notmatch '(?i)child-education-sponsorship') {
-        throw "Port $port is occupied by an unrecognized process (PID $listenerId, $($listener.Name)); it was not stopped."
-    }
-
-    Write-Output "Stopping previous sponsorship application (PID $listenerId) on port $port."
-    Stop-Process -Id $listenerId -Force
-}
-
-$stopDeadline = (Get-Date).AddSeconds(15)
-while ((Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue) -and (Get-Date) -lt $stopDeadline) {
-    Start-Sleep -Seconds 1
-}
-if (Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue) {
-    throw "Port $port is still occupied after stopping the previous application."
-}
 
 $javaPath = if ($env:JAVA_HOME) { Join-Path $env:JAVA_HOME 'bin/java.exe' } else { $null }
 if (-not $javaPath) {
@@ -60,20 +33,66 @@ if ($javaRelease -notmatch '^JAVA_VERSION="17(?:\.|"|-)') {
     throw "Java 17 is required to deploy this application. JAVA_HOME is $env:JAVA_HOME."
 }
 $javaPath = (Resolve-Path -LiteralPath $javaPath).Path
-$arguments = "-jar `"$jarPath`" --server.port=$port"
-$process = Start-Process -FilePath $javaPath `
-    -ArgumentList $arguments `
-    -WorkingDirectory $workspace `
-    -RedirectStandardOutput $stdoutLog `
-    -RedirectStandardError $stderrLog `
-    -WindowStyle Hidden `
-    -PassThru
+$currentIdentity = [System.Security.Principal.WindowsIdentity]::GetCurrent()
+$expectedJarName = [Regex]::Escape([System.IO.Path]::GetFileName($jarPath))
+
+Remove-Item -LiteralPath $pidPath -ErrorAction SilentlyContinue
+$listenerIds = @(
+    Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue |
+        Select-Object -ExpandProperty OwningProcess -Unique
+)
+foreach ($listenerId in $listenerIds) {
+    $listener = Get-CimInstance -ClassName Win32_Process -Filter "ProcessId = $listenerId" -ErrorAction SilentlyContinue
+    if ($null -eq $listener) {
+        continue
+    }
+
+    if ($listener.Name -notin @('java.exe', 'javaw.exe') -or
+        $listener.CommandLine -notmatch $expectedJarName -or
+        $listener.CommandLine -notmatch "--server\.port=$port(?:\s|$)") {
+        throw "Port $port is occupied by an unrecognized process (PID $listenerId, $($listener.Name)); it was not stopped."
+    }
+
+    Write-Output "Stopping previous sponsorship application (PID $listenerId) on port $port."
+    Stop-Process -Id $listenerId -Force
+}
+
+$stopDeadline = (Get-Date).AddSeconds(15)
+while ((Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue) -and (Get-Date) -lt $stopDeadline) {
+    Start-Sleep -Seconds 1
+}
+if (Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue) {
+    throw "Port $port is still occupied after stopping the previous application."
+}
+
+$hadNodeCookie = Test-Path Env:JENKINS_NODE_COOKIE
+$previousNodeCookie = $env:JENKINS_NODE_COOKIE
+$hadBuildId = Test-Path Env:BUILD_ID
+$previousBuildId = $env:BUILD_ID
+$healthy = $false
+$lastHealthError = 'The application did not return a successful response before the timeout.'
+$process = $null
+try {
+    $env:JENKINS_NODE_COOKIE = 'dontKillMe'
+    $env:BUILD_ID = 'dontKillMe'
+    $process = Start-Process -FilePath $javaPath `
+        -ArgumentList "-jar `"$jarPath`" --server.port=$port" `
+        -WorkingDirectory $workspace `
+        -RedirectStandardOutput $stdoutLog `
+        -RedirectStandardError $stderrLog `
+        -WindowStyle Hidden `
+        -PassThru
+} finally {
+    if ($hadNodeCookie) { $env:JENKINS_NODE_COOKIE = $previousNodeCookie } else { Remove-Item Env:JENKINS_NODE_COOKIE -ErrorAction SilentlyContinue }
+    if ($hadBuildId) { $env:BUILD_ID = $previousBuildId } else { Remove-Item Env:BUILD_ID -ErrorAction SilentlyContinue }
+}
+
 $process.Id | Set-Content -LiteralPath $pidPath -Encoding Ascii
 Write-Output "Started packaged application (PID $($process.Id)) on port $port."
+Write-Output 'Set JENKINS_NODE_COOKIE and BUILD_ID to dontKillMe for the application process.'
 Write-Output "Application logs: $logDirectory"
 
 $healthy = $false
-$lastHealthError = 'The application did not return a successful response before the timeout.'
 for ($attempt = 1; $attempt -le 30; $attempt++) {
     $process.Refresh()
     if ($process.HasExited) {
@@ -81,16 +100,19 @@ for ($attempt = 1; $attempt -le 30; $attempt++) {
         break
     }
 
-    try {
-        $response = Invoke-WebRequest -Uri $healthUrl -UseBasicParsing -TimeoutSec 5
-        if ($response.StatusCode -ge 200 -and $response.StatusCode -lt 300) {
-            $healthy = $true
-            break
+    $listener = Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue |
+        Select-Object -First 1
+    if ($listener -and $listener.OwningProcess -eq $process.Id) {
+        try {
+            $response = Invoke-WebRequest -Uri $healthUrl -UseBasicParsing -TimeoutSec 5
+            if ($response.StatusCode -eq 200) {
+                $healthy = $true
+                break
+            }
+            $lastHealthError = "Health endpoint returned HTTP $($response.StatusCode), expected HTTP 200."
+        } catch {
+            $lastHealthError = $_.Exception.Message
         }
-        $lastHealthError = "Health endpoint returned HTTP $($response.StatusCode)."
-    }
-    catch {
-        $lastHealthError = $_.Exception.Message
     }
 
     Start-Sleep -Seconds 2
@@ -101,7 +123,6 @@ if (-not $healthy) {
     if (-not $process.HasExited) {
         Stop-Process -Id $process.Id -Force
     }
-    Remove-Item -LiteralPath $pidPath -ErrorAction SilentlyContinue
     Write-Output "Application stdout (last 40 lines):"
     if (Test-Path -LiteralPath $stdoutLog) { Get-Content -LiteralPath $stdoutLog -Tail 40 }
     Write-Output "Application stderr (last 40 lines):"
@@ -110,3 +131,4 @@ if (-not $healthy) {
 }
 
 Write-Output "Health check passed: $healthUrl returned HTTP $($response.StatusCode)."
+Write-Output "Application process PID: $($process.Id)"

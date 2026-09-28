@@ -64,10 +64,13 @@ and port 8001.
 The pipeline checks out the source, builds, tests, packages and archives the
 Spring Boot JAR, then runs `scripts/deploy.ps1` to start that JAR on port 8001.
 The deploy script replaces a previous instance of this application when it
-owns port 8001, writes per-build stdout/stderr logs under `deployment-logs/`,
-and checks `http://localhost:8001/`. It fails without stopping an unrecognized
-process that occupies the application port. Concurrent Jenkins builds are
-disabled because they share this local port. See [Week 7 progress](docs/WEEK7_PROGRESS.md)
+owns port 8001, writes per-build stdout/stderr logs and a PID under
+`deployment-logs/`, and verifies HTTP 200 from `http://localhost:8001/`. It
+temporarily sets Jenkins' `JENKINS_NODE_COOKIE` and legacy `BUILD_ID` to
+`dontKillMe` for the launched Java process so Jenkins process-tree cleanup does
+not stop the deployed app after the build. It fails without stopping an
+unrecognized process that occupies the application port. Concurrent Jenkins
+builds are disabled because they share this local port. See [Week 7 progress](docs/WEEK7_PROGRESS.md)
 for initial Jenkins setup and [Week 8 progress](docs/WEEK8_PROGRESS.md) for
 deployment and verification details.
 
