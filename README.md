@@ -29,8 +29,8 @@ implemented in the current MVP.
 - Spring Data JPA
 - H2 for local development
 
-Jenkins, Selenium WebDriver, Docker, Ansible and MySQL are planned for later
-DevOps stages and are not yet configured in this repository.
+The Week 7 Jenkins CI pipeline is defined in `Jenkinsfile`. Jenkins itself must
+be installed and configured separately; no Jenkins run is claimed here.
 
 ## Run locally
 
@@ -51,6 +51,14 @@ tests with an in-memory H2 database.
 ```bash
 mvn clean test
 ```
+
+## Jenkins CI
+
+Configure Jenkins with JDK 17 and Maven 3 tools named `JDK17` and `Maven3`, then
+create a Pipeline job from this Git repository using the `Jenkinsfile`. The
+pipeline checks out the source, builds, tests, packages the Spring Boot JAR, and
+archives `target/*.jar`. See [Week 7 progress](docs/WEEK7_PROGRESS.md) for the
+manual setup and job configuration steps.
 
 ## Planned DevOps flow
 

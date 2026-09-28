@@ -1,0 +1,53 @@
+pipeline {
+    agent any
+
+    tools {
+        jdk 'JDK17'
+        maven 'Maven3'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Build') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh 'mvn -B clean compile -DskipTests'
+                    } else {
+                        bat 'mvn -B clean compile -DskipTests'
+                    }
+                }
+            }
+        }
+
+        stage('Test') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh 'mvn -B test'
+                    } else {
+                        bat 'mvn -B test'
+                    }
+                }
+            }
+        }
+
+        stage('Package') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh 'mvn -B package -DskipTests'
+                    } else {
+                        bat 'mvn -B package -DskipTests'
+                    }
+                }
+                archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
+            }
+        }
+    }
+}
