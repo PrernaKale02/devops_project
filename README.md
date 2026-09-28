@@ -29,8 +29,9 @@ implemented in the current MVP.
 - Spring Data JPA
 - H2 for local development
 
-The Week 7 Jenkins CI pipeline is defined in `Jenkinsfile`. Jenkins itself must
-be installed and configured separately; no Jenkins run is claimed here.
+The Jenkins Pipeline-as-Code definition is in `Jenkinsfile`. Week 8 adds local
+deployment of the packaged JAR on a Windows Jenkins agent; Jenkins itself must
+be installed and configured separately.
 
 ## Run locally
 
@@ -52,13 +53,23 @@ tests with an in-memory H2 database.
 mvn clean test
 ```
 
-## Jenkins CI
+## Jenkins CI/CD
 
 Configure Jenkins with JDK 17 and Maven 3 tools named `JDK17` and `Maven3`, then
 create a Pipeline job from this Git repository using the `Jenkinsfile`. The
-pipeline checks out the source, builds, tests, packages the Spring Boot JAR, and
-archives `target/*.jar`. See [Week 7 progress](docs/WEEK7_PROGRESS.md) for the
-manual setup and job configuration steps.
+agent running the job must be Windows for the Week 8 Deploy stage. Jenkins may
+run on Java 21 and port 8000; the deployed Spring Boot application uses Java 17
+and port 8001.
+
+The pipeline checks out the source, builds, tests, packages and archives the
+Spring Boot JAR, then runs `scripts/deploy.ps1` to start that JAR on port 8001.
+The deploy script replaces a previous instance of this application when it
+owns port 8001, writes per-build stdout/stderr logs under `deployment-logs/`,
+and checks `http://localhost:8001/`. It fails without stopping an unrecognized
+process that occupies the application port. Concurrent Jenkins builds are
+disabled because they share this local port. See [Week 7 progress](docs/WEEK7_PROGRESS.md)
+for initial Jenkins setup and [Week 8 progress](docs/WEEK8_PROGRESS.md) for
+deployment and verification details.
 
 ## Planned DevOps flow
 

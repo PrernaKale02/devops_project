@@ -1,4 +1,5 @@
 target/
+deployment-logs/
 .idea/
 .vscode/
 *.iml

@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    options {
+        disableConcurrentBuilds()
+    }
+
     tools {
         jdk 'JDK17'
         maven 'Maven3'
@@ -47,6 +51,18 @@ pipeline {
                     }
                 }
                 archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        error 'The Week 8 local deployment requires a Windows Jenkins agent.'
+                    } else {
+                        bat 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts\\deploy.ps1'
+                    }
+                }
             }
         }
     }
