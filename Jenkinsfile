@@ -65,5 +65,22 @@ pipeline {
                 }
             }
         }
+
+        stage('Selenium Tests') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        error 'The Selenium tests require the Windows Jenkins agent and Chrome.'
+                    } else {
+                        bat 'mvn failsafe:integration-test failsafe:verify'
+                    }
+                }
+            }
+            post {
+                always {
+                    junit testResults: 'target/*-reports/TEST-*.xml'
+                }
+            }
+        }
     }
 }

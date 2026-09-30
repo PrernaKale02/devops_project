@@ -115,9 +115,9 @@ class SponsorshipUiIT {
         new Select(row.findElement(By.cssSelector("select[name='status']"))).selectByValue("ACTIVE");
         row.findElement(By.cssSelector("button[type='submit']")).click();
 
-        WebElement updatedRow = wait.until(ExpectedConditions.visibilityOfElementLocated(testRecordRow()));
-        wait.until(driver -> updatedRow.findElement(By.xpath("./td[8]")).getText().equals("ACTIVE"));
-        assertEquals("ACTIVE", updatedRow.findElement(By.xpath("./td[8]")).getText());
+        By updatedStatus = testRecordStatusCell();
+        wait.until(ExpectedConditions.textToBePresentInElementLocated(updatedStatus, "ACTIVE"));
+        assertEquals("ACTIVE", wait.until(ExpectedConditions.visibilityOfElementLocated(updatedStatus)).getText());
     }
 
     private void createTestRecord() {
@@ -141,27 +141,26 @@ class SponsorshipUiIT {
         amount.sendKeys("125.50");
         WebElement startDate = driver.findElement(By.id("startDate"));
         ((JavascriptExecutor) driver).executeScript(
-            "arguments[0].value = arguments[1];"
-                + "arguments[0].dispatchEvent(new Event('input', { bubbles: true }));"
-                + "arguments[0].dispatchEvent(new Event('change', { bubbles: true }));",
-            startDate, LocalDate.now().toString());
+                "arguments[0].value = arguments[1];"
+                        + "arguments[0].dispatchEvent(new Event('input', { bubbles: true }));"
+                        + "arguments[0].dispatchEvent(new Event('change', { bubbles: true }));",
+                startDate, LocalDate.now().toString());
         new Select(driver.findElement(By.id("status"))).selectByValue("PENDING");
         String submittedFormValues = driver.findElements(By.cssSelector(
                 "form[action='/sponsorships/save'] input, form[action='/sponsorships/save'] select"))
-            .stream()
-            .map(element -> element.getAttribute("name") + "="
-                + (element.getTagName().equals("select")
-                    ? new Select(element).getFirstSelectedOption().getAttribute("value")
-                    : element.getAttribute("value")))
-            .reduce((first, next) -> first + ", " + next)
-            .orElse("<no controls>");
+                .stream()
+                .map(element -> element.getAttribute("name") + "="
+                        + (element.getTagName().equals("select")
+                                ? new Select(element).getFirstSelectedOption().getAttribute("value")
+                                : element.getAttribute("value")))
+                .reduce((first, next) -> first + ", " + next)
+                .orElse("<no controls>");
         driver.findElement(By.cssSelector("button[type='submit']")).click();
 
         boolean completed = false;
         try {
-            completed = wait.until(webDriver ->
-                    webDriver.getCurrentUrl().equals(BASE_URL + "/sponsorships")
-                            || hasVisibleValidationError(webDriver));
+            completed = wait.until(webDriver -> webDriver.getCurrentUrl().equals(BASE_URL + "/sponsorships")
+                    || hasVisibleValidationError(webDriver));
         } catch (TimeoutException ignored) {
             // Include the current browser response below when submission does not complete.
         }
@@ -188,5 +187,9 @@ class SponsorshipUiIT {
 
     private By testRecordRow() {
         return By.xpath("//tbody/tr[td[1][normalize-space()='" + testChildId + "']]");
+    }
+
+    private By testRecordStatusCell() {
+        return By.xpath("//tbody/tr[td[1][normalize-space()='" + testChildId + "']]/td[8]");
     }
 }
