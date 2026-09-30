@@ -65,7 +65,7 @@ class SponsorshipUiIT {
     void landingPageLoadsWithExpectedTitleAndMainContent() {
         driver.get(BASE_URL + "/");
 
-        assertEquals("wrong title", driver.getTitle());
+        assertEquals("Child Education Sponsorship System", driver.getTitle());
         assertEquals("Child Education Sponsorship System", headingText());
         assertTrue(driver.findElement(By.cssSelector("a[href='/sponsorships']")).isDisplayed());
     }
