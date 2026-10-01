@@ -1,74 +1,58 @@
 <!doctype html>
-<html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Child Education Sponsorship System</title>
-		<style>
-			body {
-				font-family: Arial, sans-serif;
-				margin: 0;
-				background: #f4f6f8;
-				color: #222;
-			}
-			.container {
-				max-width: 900px;
-				margin: 60px auto;
-				padding: 30px;
-			}
-			.card {
-				background: white;
-				padding: 35px;
-				border-radius: 12px;
-				box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
-			}
-			h1 {
-				margin-top: 0;
-			}
-			.status {
-				display: inline-block;
-				padding: 8px 12px;
-				border-radius: 20px;
-				background: #e8f5e9;
-			}
-			ul {
-				line-height: 1.9;
-			}
-		</style>
-	</head>
-	<body>
-		<div class="container">
-			<div class="card">
-				<h1>Child Education Sponsorship System</h1>
-				<p class="status">Local development setup is running</p>
-				<h3>Project MVP</h3>
-				<ul>
-					<li>Role-based user access</li>
-					<li>Sponsorship record management</li>
-					<li>Status workflow</li>
-					<li>Summary dashboard</li>
-				</ul>
-				<p>
-					<strong>DevOps stack:</strong> GitHub, Jenkins, Maven, Selenium,
-					Docker and Ansible
-				</p>
-			</div>
-			<div style="margin-top: 25px">
-				<a
-					href="/sponsorships"
-					style="
-						display: inline-block;
-						padding: 12px 24px;
-						background-color: #2563eb;
-						color: white;
-						text-decoration: none;
-						border-radius: 6px;
-						font-weight: bold;
-					"
-				>
-					Manage Sponsorships →
-				</a>
-			</div>
-		</div>
-	</body>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <title>
+            Child Education Sponsorship System
+        </title>
+        <link rel="stylesheet" th:href="@{/css/portal.css}">
+        <style>
+            .welcome{min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 80% 12%,#dff2ed 0,transparent 28%),var(--canvas)}.welcome-card{width:min(980px,100%);display:grid;grid-template-columns:1.15fr .85fr;background:#fff;border:1px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:0 18px 55px #19384912}.welcome-copy{padding:58px 54px}.welcome-copy .brand{padding:0;margin-bottom:54px}.welcome-copy h1{font:800 37px/1.2 Manrope,sans-serif;letter-spacing:-1px;margin:0 0 16px}.welcome-copy p{color:var(--muted);line-height:1.7;font-size:15px}.welcome-art{background:linear-gradient(145deg,#184b57,#157b73);padding:42px;color:white;display:flex;flex-direction:column;justify-content:flex-end;min-height:480px;position:relative}.welcome-art:before{content:'✳';position:absolute;inset:36px 0 auto;text-align:center;font-size:150px;color:#ffffff24}.welcome-art h2{font:700 23px Manrope;position:relative}.welcome-art p{color:#d0e5e2;line-height:1.65;position:relative}.welcome-badge{display:inline-flex;background:#e4f4f0;color:#287269;padding:8px 12px;border-radius:20px;font-size:12px;font-weight:700;margin:13px 0 24px}@media(max-width:700px){.welcome-card{grid-template-columns:1fr}.welcome-copy{padding:32px 26px}.welcome-copy .brand{margin-bottom:38px}.welcome-copy h1{font-size:30px}.welcome-art{min-height:270px;padding:28px}.welcome-art:before{font-size:96px;inset:5px 0 auto}}
+        </style>
+    </head>
+    <body>
+        <main class="welcome">
+            <div class="welcome-card">
+                <section class="welcome-copy">
+                    <a class="brand" href="/">
+                        <span class="brand-mark">
+                            P
+                        </span>
+                        <span>
+                            Prerna
+                            <small>
+                                Education programs
+                            </small>
+                        </span>
+                    </a>
+                    <div class="eyebrow">
+                        Child education sponsorship
+                    </div>
+                    <h1>
+                        Child Education Sponsorship System
+                    </h1>
+                    <p>
+                        Helping every child continue their education through a thoughtful workspace for coordinating sponsorships, supporting students, and tracking each commitment.
+                    </p>
+                    <span class="welcome-badge">
+                        Local development setup is running
+                    </span>
+                    <br>
+                    <a href="/sponsorships" class="btn">
+                        Manage Sponsorships
+                        &rarr;
+                    </a>
+                </section>
+                <aside class="welcome-art">
+                    <h2>
+                        Small acts of support. Lasting opportunities.
+                    </h2>
+                    <p>
+                        Keep child and sponsor information together, follow sponsorship progress, and make program activity easier to understand.
+                    </p>
+                </aside>
+            </div>
+        </main>
+    </body>
 </html>

@@ -1,0 +1,215 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <title>
+            Sponsorship Details
+        </title>
+        <link rel="stylesheet" th:href="@{/css/portal.css}">
+    </head>
+    <body>
+        <div class="shell">
+            <aside class="sidebar">
+                <a class="brand" href="/sponsorships/dashboard">
+                    <span class="brand-mark">
+                        P
+                    </span>
+                    <span>
+                        Prerna
+                        <small>
+                            Education programs
+                        </small>
+                    </span>
+                </a>
+                <div class="nav-label">
+                    WORKSPACE
+                </div>
+                <nav>
+                    <a class="nav-link" href="/sponsorships/dashboard">
+                        Dashboard
+                    </a>
+                    <a class="nav-link" href="/sponsorships/children">
+                        Children
+                    </a>
+                    <a class="nav-link" href="/sponsorships/sponsors">
+                        Sponsors
+                    </a>
+                    <a class="nav-link active" href="/sponsorships">
+                        Sponsorships
+                    </a>
+                </nav>
+            </aside>
+            <main class="main">
+                <header class="topbar">
+                    <span class="crumb">
+                        <a href="/sponsorships">
+                            Sponsorships
+                        </a>
+                        / Details
+                    </span>
+                    <span class="user">
+                        <span class="avatar">
+                            P
+                        </span>
+                        Program team
+                    </span>
+                </header>
+                <section class="content">
+                    <div class="page-head">
+                        <div>
+                            <div class="eyebrow">
+                                Record
+                                <span th:text="${'#' + sponsorship.id}">
+                                </span>
+                            </div>
+                            <h1>
+                                Sponsorship details
+                            </h1>
+                        </div>
+                        <a class="btn secondary" href="/sponsorships">
+                            Back to sponsorships
+                        </a>
+                    </div>
+                    <section class="detail-hero">
+                        <div>
+                            <span class="badge" th:classappend="${sponsorship.status}" th:text="${sponsorship.status}">
+                            </span>
+                            <h2 th:text="${sponsorship.childName + ' · ' + sponsorship.childId}">
+                            </h2>
+                            <p>
+                                Education sponsorship record
+                            </p>
+                        </div>
+                        <div style="text-align:right">
+                            <div class="detail-label" style="color:#c4d4d9">
+                                SPONSORSHIP AMOUNT
+                            </div>
+                            <div style="font:800 26px Manrope" th:text="${#numbers.formatCurrency(sponsorship.sponsorshipAmount)}">
+                            </div>
+                        </div>
+                    </section>
+                    <div class="detail-grid">
+                        <section class="panel">
+                            <div class="panel-head">
+                                <h2 class="panel-title">
+                                    Child information
+                                </h2>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">
+                                    Child ID
+                                </div>
+                                <div class="detail-value" th:text="${sponsorship.childId}">
+                                </div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">
+                                    Full name
+                                </div>
+                                <div class="detail-value" th:text="${sponsorship.childName}">
+                                </div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">
+                                    Age and gender
+                                </div>
+                                <div class="detail-value" th:text="${sponsorship.age + ' · ' + (sponsorship.gender ?: 'Not recorded')}">
+                                </div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">
+                                    School
+                                </div>
+                                <div class="detail-value" th:text="${sponsorship.school}">
+                                </div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">
+                                    Education level
+                                </div>
+                                <div class="detail-value" th:text="${sponsorship.educationLevel}">
+                                </div>
+                            </div>
+                        </section>
+                        <section class="panel">
+                            <div class="panel-head">
+                                <h2 class="panel-title">
+                                    Sponsor information
+                                </h2>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">
+                                    Sponsor
+                                </div>
+                                <div class="detail-value" th:text="${sponsorship.sponsorName}">
+                                </div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">
+                                    Sponsor ID
+                                </div>
+                                <div class="detail-value" th:text="${'SP-' + sponsorship.id}">
+                                </div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">
+                                    Email
+                                </div>
+                                <div class="detail-value">
+                                    Not recorded
+                                </div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">
+                                    Start date
+                                </div>
+                                <div class="detail-value" th:text="${sponsorship.startDate != null ? #temporals.format(sponsorship.startDate,'dd MMMM yyyy') : 'Not recorded'}">
+                                </div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">
+                                    Current status
+                                </div>
+                                <div class="detail-value">
+                                    <span class="badge" th:classappend="${sponsorship.status}" th:text="${sponsorship.status}">
+                                    </span>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                    <section class="panel" style="margin-top:18px">
+                        <div class="panel-head">
+                            <h2 class="panel-title">
+                                Sponsorship timeline
+                            </h2>
+                        </div>
+                        <div class="timeline">
+                            <div class="timeline-step done">
+                                <strong>
+                                    Record created
+                                </strong>
+                                <span th:text="${sponsorship.startDate != null ? #temporals.format(sponsorship.startDate,'dd MMM yyyy') : 'Date unavailable'}">
+                                </span>
+                            </div>
+                            <div class="timeline-step" th:classappend="${sponsorship.status == T(com.prerna.sponsorship.model.Sponsorship.Status).ACTIVE or sponsorship.status == T(com.prerna.sponsorship.model.Sponsorship.Status).COMPLETED ? ' done' : ''}">
+                                <strong>
+                                    Support active
+                                </strong>
+                                <span th:text="${sponsorship.status == T(com.prerna.sponsorship.model.Sponsorship.Status).ACTIVE or sponsorship.status == T(com.prerna.sponsorship.model.Sponsorship.Status).COMPLETED ? 'Status recorded' : 'Awaiting activation'}">
+                                </span>
+                            </div>
+                            <div class="timeline-step" th:classappend="${sponsorship.status == T(com.prerna.sponsorship.model.Sponsorship.Status).COMPLETED ? ' done' : ''}">
+                                <strong>
+                                    Completed
+                                </strong>
+                                <span th:text="${sponsorship.status == T(com.prerna.sponsorship.model.Sponsorship.Status).COMPLETED ? 'Completed' : 'In progress'}">
+                                </span>
+                            </div>
+                        </div>
+                    </section>
+                </section>
+            </main>
+        </div>
+    </body>
+</html>

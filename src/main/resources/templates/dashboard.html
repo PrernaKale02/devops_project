@@ -1,62 +1,308 @@
 <!doctype html>
 <html xmlns:th="http://www.thymeleaf.org">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Sponsorship Dashboard</title>
-		<style>
-			body {
-				font-family: Arial, sans-serif;
-				margin: 40px;
-				background: #f5f7fa;
-			}
-			.container {
-				max-width: 900px;
-				margin: auto;
-				background: white;
-				padding: 30px;
-				border-radius: 10px;
-			}
-			.counts {
-				display: grid;
-				grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-				gap: 15px;
-			}
-			.count {
-				padding: 20px;
-				background: #f1f5f9;
-				border-radius: 6px;
-			}
-			.count strong {
-				display: block;
-				font-size: 2rem;
-			}
-			a {
-				display: inline-block;
-				margin-top: 25px;
-				color: #2563eb;
-			}
-		</style>
-	</head>
-	<body>
-		<main class="container">
-			<h1>Sponsorship Dashboard</h1>
-			<div class="counts">
-				<div class="count"><strong th:text="${totalCount}">0</strong>Total</div>
-				<div class="count">
-					<strong th:text="${pendingCount}">0</strong>Pending
-				</div>
-				<div class="count">
-					<strong th:text="${activeCount}">0</strong>Active
-				</div>
-				<div class="count">
-					<strong th:text="${completedCount}">0</strong>Completed
-				</div>
-				<div class="count">
-					<strong th:text="${cancelledCount}">0</strong>Cancelled
-				</div>
-			</div>
-			<a href="/sponsorships">Back to sponsorship records</a>
-		</main>
-	</body>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <title>
+            Sponsorship Dashboard
+        </title>
+        <link rel="stylesheet" th:href="@{/css/portal.css}">
+    </head>
+    <body>
+        <div class="shell">
+            <aside class="sidebar">
+                <a class="brand" href="/sponsorships/dashboard">
+                    <span class="brand-mark">
+                        P
+                    </span>
+                    <span>
+                        Prerna
+                        <span>
+                            <small>
+                                Education programs
+                            </small>
+                        </span>
+                    </span>
+                </a>
+                <div class="nav-label">
+                    WORKSPACE
+                </div>
+                <nav>
+                    <a class="nav-link active" href="/sponsorships/dashboard">
+                        <span class="ico">
+                            D
+                        </span>
+                        Dashboard
+                    </a>
+                    <a class="nav-link" href="/sponsorships/children">
+                        <span class="ico">
+                            C
+                        </span>
+                        Children
+                    </a>
+                    <a class="nav-link" href="/sponsorships/sponsors">
+                        <span class="ico">
+                            S
+                        </span>
+                        Sponsors
+                    </a>
+                    <a class="nav-link" href="/sponsorships">
+                        <span class="ico">
+                            R
+                        </span>
+                        Sponsorships
+                    </a>
+                </nav>
+                <div class="side-note">
+                    <strong>
+                        Every child deserves a chance.
+                    </strong>
+                    Track education support and the people making it possible.
+                </div>
+            </aside>
+            <main class="main">
+                <header class="topbar">
+                    <span class="crumb">
+                        Workspace / Dashboard
+                    </span>
+                    <span class="user">
+                        <span class="avatar">
+                            P
+                        </span>
+                        Program team
+                    </span>
+                </header>
+                <section class="content">
+                    <div class="page-head">
+                        <div>
+                            <div class="eyebrow">
+                                Overview · Program overview
+                            </div>
+                            <h1>
+                                Sponsorship Dashboard
+                            </h1>
+                            <p class="subhead">
+                                A clear view of education support across your program.
+                            </p>
+                        </div>
+                        <a class="btn" href="/sponsorships/new">
+                            + New sponsorship
+                        </a>
+                    </div>
+                    <div class="stats">
+                        <div class="stat">
+                            <div class="stat-top">
+                                Total children
+                                <span class="stat-icon">
+                                    T
+                                </span>
+                            </div>
+                            <div class="stat-value" th:text="${totalCount}">
+                                0
+                            </div>
+                            <div class="stat-hint">
+                                Children represented in records
+                            </div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-top">
+                                Active sponsorships
+                                <span class="stat-icon">
+                                    A
+                                </span>
+                            </div>
+                            <div class="stat-value" th:text="${activeCount}">
+                                0
+                            </div>
+                            <div class="stat-hint">
+                                Currently supporting education
+                            </div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-top">
+                                Pending sponsorships
+                                <span class="stat-icon">
+                                    P
+                                </span>
+                            </div>
+                            <div class="stat-value" th:text="${pendingCount}">
+                                0
+                            </div>
+                            <div class="stat-hint">
+                                Awaiting activation
+                            </div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-top">
+                                Completed sponsorships
+                                <span class="stat-icon">
+                                    C
+                                </span>
+                            </div>
+                            <div class="stat-value" th:text="${completedCount}">
+                                0
+                            </div>
+                            <div class="stat-hint">
+                                Education journeys completed
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid-two">
+                        <section class="panel">
+                            <div class="panel-head">
+                                <h2 class="panel-title">
+                                    Recent sponsorships
+                                </h2>
+                                <a class="panel-link" href="/sponsorships">
+                                    View all →
+                                </a>
+                            </div>
+                            <div class="table-wrap">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                                Child
+                                            </th>
+                                            <th>
+                                                Sponsor
+                                            </th>
+                                            <th>
+                                                Start date
+                                            </th>
+                                            <th>
+                                                Amount
+                                            </th>
+                                            <th>
+                                                Status
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="s : ${recentSponsorships}">
+                                            <td>
+                                                <div class="primary-cell" th:text="${s.childName}">
+                                                    Child name
+                                                </div>
+                                                <div class="secondary-cell" th:text="${s.childId}">
+                                                    ID
+                                                </div>
+                                            </td>
+                                            <td th:text="${s.sponsorName}">
+                                                Sponsor
+                                            </td>
+                                            <td th:text="${s.startDate != null ? #temporals.format(s.startDate,'dd MMM yyyy') : 'Not recorded'}">
+                                                Date
+                                            </td>
+                                            <td th:text="${#numbers.formatCurrency(s.sponsorshipAmount)}">
+                                                ₹0
+                                            </td>
+                                            <td>
+                                                <span class="badge" th:classappend="${s.status}" th:text="${s.status}">
+                                                    PENDING
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        <tr th:if="${#lists.isEmpty(recentSponsorships)}">
+                                            <td colspan="5">
+                                                <div class="empty">
+                                                    <div class="empty-icon">
+                                                        *
+                                                    </div>
+                                                    <strong>
+                                                        No sponsorships yet
+                                                    </strong>
+                                                    Create a record to start tracking education support.
+                                                    <br>
+                                                    <a class="panel-link" href="/sponsorships/new">
+                                                        Add the first sponsorship →
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </section>
+                        <section class="panel">
+                            <div class="panel-head">
+                                <h2 class="panel-title">
+                                    Status overview
+                                </h2>
+                                <span class="secondary-cell">
+                                    All records
+                                </span>
+                            </div>
+                            <div class="status-list">
+                                <div class="status-row">
+                                    <span>
+                                        Active
+                                    </span>
+                                    <div class="progress">
+                                        <span th:style="'width:' + (${sponsorshipCount > 0 ? activeCount * 100 / sponsorshipCount : 0}) + '%' ">
+                                        </span>
+                                    </div>
+                                    <strong th:text="${activeCount}">
+                                        0
+                                    </strong>
+                                </div>
+                                <div class="status-row pending">
+                                    <span>
+                                        Pending
+                                    </span>
+                                    <div class="progress">
+                                        <span th:style="'width:' + (${sponsorshipCount > 0 ? pendingCount * 100 / sponsorshipCount : 0}) + '%' ">
+                                        </span>
+                                    </div>
+                                    <strong th:text="${pendingCount}">
+                                        0
+                                    </strong>
+                                </div>
+                                <div class="status-row completed">
+                                    <span>
+                                        Completed
+                                    </span>
+                                    <div class="progress">
+                                        <span th:style="'width:' + (${sponsorshipCount > 0 ? completedCount * 100 / sponsorshipCount : 0}) + '%' ">
+                                        </span>
+                                    </div>
+                                    <strong th:text="${completedCount}">
+                                        0
+                                    </strong>
+                                </div>
+                                <div class="status-row cancelled">
+                                    <span>
+                                        Cancelled
+                                    </span>
+                                    <div class="progress">
+                                        <span th:style="'width:' + (${sponsorshipCount > 0 ? cancelledCount * 100 / sponsorshipCount : 0}) + '%' ">
+                                        </span>
+                                    </div>
+                                    <strong th:text="${cancelledCount}">
+                                        0
+                                    </strong>
+                                </div>
+                            </div>
+                            <hr style="border:0;border-top:1px solid var(--line);margin:23px 0 16px">
+                            <div class="stat-top">
+                                Total sponsorship amount
+                                <span class="stat-icon">
+                                    T
+                                </span>
+                            </div>
+                            <div class="stat-value" th:text="${#numbers.formatCurrency(totalAmount)}">
+                                ₹0
+                            </div>
+                            <div class="stat-hint">
+                                Combined contribution across all records
+                            </div>
+                        </section>
+                    </div>
+                    <div class="footer-note">
+                        Prerna · Child Education Sponsorship Management
+                    </div>
+                </section>
+            </main>
+        </div>
+    </body>
 </html>
