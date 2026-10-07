@@ -10,6 +10,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.prerna.sponsorship.model.Sponsorship;
 import com.prerna.sponsorship.repository.SponsorshipRepository;
+import com.prerna.sponsorship.SampleSponsorshipDataSeeder;
 
 import java.time.LocalDate;
 
@@ -20,7 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 
-@SpringBootTest
+@SpringBootTest(properties = "spring.datasource.url=jdbc:h2:mem:sponsorshipdb-test;DB_CLOSE_DELAY=-1")
 @AutoConfigureMockMvc
 class ChildSponsorshipApplicationTests {
 
@@ -29,6 +30,9 @@ class ChildSponsorshipApplicationTests {
 
     @Autowired
     private SponsorshipRepository repository;
+
+    @Autowired
+    private SampleSponsorshipDataSeeder dataSeeder;
 
     @BeforeEach
     void clearData() {
@@ -39,15 +43,31 @@ class ChildSponsorshipApplicationTests {
     void contextLoads() {
     }
 
-        @Test
-        void landingPageLinksToSponsorshipManagement() throws Exception {
-        mockMvc.perform(get("/"))
-            .andExpect(status().isOk())
-            .andExpect(content().string(org.hamcrest.Matchers.containsString("/sponsorships")));
-        }
+    @Test
+    void sampleDataSeederIsIdempotent() {
+        dataSeeder.run();
+        assertSampleRecords();
 
-        @Test
-        void sponsorshipCrudSearchDashboardAndStatusWorkflow() throws Exception {
+        dataSeeder.run();
+        assertSampleRecords();
+    }
+
+    private void assertSampleRecords() {
+        org.junit.jupiter.api.Assertions.assertEquals(8, repository.count());
+        org.junit.jupiter.api.Assertions.assertEquals(8, repository.findAll().stream()
+                .filter(record -> record.getChildId().startsWith("CH-100"))
+                .count());
+    }
+
+    @Test
+    void landingPageLinksToSponsorshipManagement() throws Exception {
+        mockMvc.perform(get("/"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("/sponsorships")));
+    }
+
+    @Test
+    void sponsorshipCrudSearchDashboardAndStatusWorkflow() throws Exception {
         Sponsorship sponsorship = new Sponsorship();
         sponsorship.setChildId("CH-001");
         sponsorship.setChildName("Asha");
@@ -57,23 +77,23 @@ class ChildSponsorshipApplicationTests {
         sponsorship = repository.save(sponsorship);
 
         mockMvc.perform(get("/sponsorships").param("search", "CH-001"))
-            .andExpect(status().isOk())
-            .andExpect(view().name("sponsorships"))
-            .andExpect(content().string(org.hamcrest.Matchers.containsString("Asha")));
+                .andExpect(status().isOk())
+                .andExpect(view().name("sponsorships"))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Asha")));
 
         mockMvc.perform(get("/sponsorships/dashboard"))
-            .andExpect(status().isOk())
-            .andExpect(view().name("dashboard"))
-            .andExpect(content().string(org.hamcrest.Matchers.containsString("Pending")));
+                .andExpect(status().isOk())
+                .andExpect(view().name("dashboard"))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Pending")));
 
         mockMvc.perform(post("/sponsorships/{id}/status", sponsorship.getId())
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .param("status", "ACTIVE"))
-            .andExpect(status().is3xxRedirection())
-            .andExpect(redirectedUrl("/sponsorships"));
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/sponsorships"));
 
         org.junit.jupiter.api.Assertions.assertEquals(
-            Sponsorship.Status.ACTIVE,
-            repository.findById(sponsorship.getId()).orElseThrow().getStatus());
-        }
+                Sponsorship.Status.ACTIVE,
+                repository.findById(sponsorship.getId()).orElseThrow().getStatus());
+    }
 }

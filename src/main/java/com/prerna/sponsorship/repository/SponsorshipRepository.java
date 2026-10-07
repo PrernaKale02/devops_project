@@ -8,6 +8,8 @@ import java.util.Optional;
 
 public interface SponsorshipRepository extends JpaRepository<Sponsorship, Long> {
 
+    boolean existsByChildId(String childId);
+
     List<Sponsorship> findByChildIdContainingIgnoreCaseOrChildNameContainingIgnoreCaseOrSponsorNameContainingIgnoreCase(
             String childId,
             String childName,
