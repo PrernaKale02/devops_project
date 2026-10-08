@@ -53,12 +53,20 @@ if ($LASTEXITCODE -eq 0) {
     throw "Docker could not reliably inspect the existing container '$containerName'; deployment was stopped."
 }
 
-$runOutput = & docker run -d `
-    --name $containerName `
-    --label "$projectLabel=$projectLabelValue" `
-    --publish "${port}:${port}" `
-    --volume 'sponsorship-data:/app/data' `
-    $image 2>&1
+$dockerRunArguments = @(
+    'run'
+    '-d'
+    '--name'
+    $containerName
+    '--label'
+    "app=$projectLabelValue"
+    '--publish'
+    "${port}:${port}"
+    '--volume'
+    'sponsorship-data:/app/data'
+    $image
+)
+$runOutput = & docker @dockerRunArguments 2>&1
 if ($LASTEXITCODE -ne 0) {
     throw "Docker failed to start '$image': $runOutput"
 }
@@ -70,9 +78,30 @@ if ($LASTEXITCODE -ne 0 -or ($state | Out-String).Trim() -ne 'running') {
     Write-Output $logs
     throw "Container '$containerName' did not remain running after launch."
 }
-$publishedPorts = & docker port $containerName "${port}/tcp" 2>&1
-if ($LASTEXITCODE -ne 0) {
-    throw "Could not verify the published container port: $publishedPorts"
+$psOutput = & docker ps --filter "name=^/$containerName$" --format '{{.Names}}|{{.Image}}|{{.Status}}|{{.Ports}}' 2>&1
+if ($LASTEXITCODE -ne 0 -or -not ($psOutput | Out-String).Contains($containerName)) {
+    throw "Container '$containerName' is not present as a running container in docker ps: $psOutput"
 }
-Write-Output "Container status: running. Port mapping: $publishedPorts"
-Write-Output 'Persistent database volume: sponsorship-data:/app/data'
+Write-Output 'docker ps verification:'
+Write-Output $psOutput
+
+$inspectJson = & docker inspect $containerName 2>&1
+if ($LASTEXITCODE -ne 0) {
+    throw "Could not inspect deployed container '$containerName': $inspectJson"
+}
+$inspect = ($inspectJson | Out-String) | ConvertFrom-Json
+$container = $inspect[0]
+if ($container.Config.Image -ne $image) {
+    throw "Container image mismatch: expected '$image', found '$($container.Config.Image)'."
+}
+if (-not $container.State.Running) {
+    throw "Container '$containerName' is not running according to docker inspect."
+}
+$portBinding = $container.NetworkSettings.Ports."${port}/tcp"
+if (-not ($portBinding | Where-Object { $_.HostPort -eq [string]$port })) {
+    throw "Container '$containerName' is not published on host port $port."
+}
+if (-not ($container.Mounts | Where-Object { $_.Name -eq 'sponsorship-data' -and $_.Destination -eq '/app/data' })) {
+    throw "Container '$containerName' is missing the sponsorship-data:/app/data volume mount."
+}
+Write-Output "docker inspect verification: image=$($container.Config.Image); running=$($container.State.Running); port=$port`:$port; volume=sponsorship-data:/app/data"
