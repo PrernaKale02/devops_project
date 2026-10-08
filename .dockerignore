@@ -1,0 +1,16 @@
+.git
+.github
+.idea
+.vscode
+*.iml
+target
+data
+deployment-logs
+*.log
+.env
+.DS_Store
+docs
+src/test
+README.md
+Jenkinsfile
+scripts
