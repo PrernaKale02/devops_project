@@ -19,26 +19,22 @@ if ($LASTEXITCODE -ne 0) {
     throw "The build image '$image' does not exist; Docker Deployment cannot continue."
 }
 
-$existingImage = & docker container inspect --format '{{.Config.Image}}' $containerName 2>$null
-if ($LASTEXITCODE -eq 0) {
-    $existingImage = ($existingImage | Out-String).Trim()
-    $labelsJson = & docker container inspect --format '{{json .Config.Labels}}' $containerName 2>$null
-    if ($LASTEXITCODE -ne 0) {
-        throw "Could not inspect existing container '$containerName'; it was not changed."
-    }
-    $labels = ($labelsJson | Out-String).Trim() | ConvertFrom-Json
-    $existingLabel = if ($labels) { $labels.PSObject.Properties['com.prerna.project'].Value } else { $null }
+$existingJson = & docker container inspect $containerName 2>&1
+$inspectExitCode = $LASTEXITCODE
+if ($inspectExitCode -eq 0) {
+    $existingContainer = ($existingJson | Out-String) | ConvertFrom-Json
+    $existingContainer = $existingContainer[0]
+    $existingImage = $existingContainer.Config.Image
+    $existingLabels = $existingContainer.Config.Labels
+    $existingLabel = if ($existingLabels) { $existingLabels.'com.prerna.project' } else { $null }
     $isProjectContainer = $existingLabel -eq $projectLabelValue -or
         $existingImage -match '(^|/)child-education-sponsorship:[^/]+$'
     if (-not $isProjectContainer) {
         throw "Container '$containerName' is not identified as this project (image '$existingImage', label '$existingLabel'); it was not changed."
     }
 
-    $running = & docker container inspect --format '{{.State.Running}}' $containerName 2>$null
-    if ($LASTEXITCODE -ne 0) {
-        throw "Could not determine whether '$containerName' is running; it was not changed."
-    }
-    if (($running | Out-String).Trim() -eq 'true') {
+    Write-Output "Found prior project container '$containerName' using image '$existingImage'."
+    if ($existingContainer.State.Running) {
         $stopOutput = & docker stop $containerName 2>&1
         if ($LASTEXITCODE -ne 0) {
             throw "Could not stop the existing project container '$containerName': $stopOutput"
@@ -49,10 +45,14 @@ if ($LASTEXITCODE -eq 0) {
         throw "Could not remove the existing project container '$containerName': $removeOutput"
     }
     Write-Output "Removed only the identified prior project container '$containerName'; the sponsorship-data volume was preserved."
-} elseif ($LASTEXITCODE -ne 1) {
-    throw "Docker could not reliably inspect the existing container '$containerName'; deployment was stopped."
+} else {
+    $inspectError = ($existingJson | Out-String)
+    if ($inspectError -match '(?i)no such (container|object)|not found') {
+        Write-Output "No prior container named '$containerName' exists; continuing with deployment."
+    } else {
+        throw "Could not inspect existing container '$containerName' (exit $inspectExitCode): $inspectError"
+    }
 }
-
 $dockerRunArguments = @(
     'run'
     '-d'
@@ -67,8 +67,10 @@ $dockerRunArguments = @(
     $image
 )
 $runOutput = & docker @dockerRunArguments 2>&1
-if ($LASTEXITCODE -ne 0) {
-    throw "Docker failed to start '$image': $runOutput"
+$runExitCode = $LASTEXITCODE
+if ($runExitCode -ne 0) {
+    Write-Output $runOutput
+    exit 1
 }
 Write-Output "Started container '$containerName' from '$image'. Container ID: $runOutput"
 
@@ -85,7 +87,7 @@ if ($LASTEXITCODE -ne 0 -or -not ($psOutput | Out-String).Contains($containerNam
 Write-Output 'docker ps verification:'
 Write-Output $psOutput
 
-$inspectJson = & docker inspect $containerName 2>&1
+$inspectJson = & docker container inspect $containerName 2>&1
 if ($LASTEXITCODE -ne 0) {
     throw "Could not inspect deployed container '$containerName': $inspectJson"
 }
