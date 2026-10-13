@@ -1,0 +1,31 @@
+---
+- name: Provision the local Child Education Sponsorship deployment environment
+  hosts: local
+  connection: local
+  gather_facts: true
+
+  vars:
+    project_data_dir: "{{ playbook_dir }}/../data"
+    deployment_support_dir: "{{ ansible_env.HOME }}/.local/share/child-education-sponsorship/ansible-provisioned"
+
+  tasks:
+    - name: Verify this is the expected Ubuntu WSL controller
+      ansible.builtin.assert:
+        that:
+          - ansible_distribution == "Ubuntu"
+          - ansible_distribution_version is version("24.04", ">=")
+          - ansible_python_version is version("3.12", ">=")
+        fail_msg: "This local provisioning playbook expects Ubuntu 24.04+ and Python 3.12+."
+        success_msg: "Ubuntu {{ ansible_distribution_version }} with Python {{ ansible_python_version }} is ready."
+
+    - name: Ensure the project H2 data directory exists
+      ansible.builtin.file:
+        path: "{{ project_data_dir }}"
+        state: directory
+        mode: "0775"
+
+    - name: Ensure the local deployment support directory exists
+      ansible.builtin.file:
+        path: "{{ deployment_support_dir }}"
+        state: directory
+        mode: "0755"
